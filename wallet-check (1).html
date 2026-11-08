@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wallet Check – Boss Battle</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;user-select:none}
+body{min-height:100vh;display:flex;justify-content:center;background:#0b0420;color:#fdf6e3;font:800 16px/1.4 Nunito,sans-serif}
+.px{font-family:'Press Start 2P','Courier New',monospace;font-weight:400}
+#g{width:100%;max-width:760px;display:flex;flex-direction:column;padding:10px}
+.bar{height:14px;background:#000;border:3px solid #000;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;transition:width .3s}
+#hud{display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:6px 4px}#hud b{color:#ffc83d}
+#arena{position:relative;height:300px;border:4px solid #000;border-radius:16px;overflow:hidden;background:linear-gradient(#1a0b4d,#5b1f7a 60%,#ff8a5c 100%);box-shadow:0 6px 0 #000}
+#arena::after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;background:repeating-linear-gradient(90deg,#2a1450 0 40px,#34206f 40px 80px);border-top:4px solid #000}
+.star{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;animation:tw 2s infinite}
+#boss{position:absolute;right:9%;bottom:55px;font-size:96px;animation:float 2s ease-in-out infinite;z-index:2;filter:drop-shadow(0 8px 0 #0006)}
+#hero{position:absolute;left:9%;bottom:55px;font-size:80px;z-index:2;transition:transform .2s;filter:drop-shadow(0 8px 0 #0006)}
+#bossbar{position:absolute;top:10px;right:10px;width:46%;z-index:3}#bossbar small{font-size:9px;display:block;margin-bottom:4px;text-align:right}
+#bossbar i{background:linear-gradient(#ff6b7a,#c4172e)}
+.bolt{position:absolute;font-size:44px;z-index:4;bottom:90px;left:20%;transition:left .35s linear}
+.dmg{position:absolute;z-index:5;font-size:20px;color:#ffc83d;text-shadow:2px 2px 0 #000;animation:rise 1s forwards;pointer-events:none}
+.pt{position:absolute;z-index:5;font-size:20px;animation:burst .7s forwards}
+#combo{position:absolute;top:10px;left:12px;z-index:3;font-size:12px;color:#2de2a0;text-shadow:2px 2px 0 #000}
+#banner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;font-size:26px;color:#ffc83d;text-shadow:4px 4px 0 #000;pointer-events:none;animation:ban 1.2s forwards}
+.hit{animation:shake .35s}.flash::before{content:"";position:absolute;inset:0;background:#ff1f3d;opacity:.5;z-index:7;animation:fade .4s forwards}
+#panel{margin-top:14px;background:#241552;border:4px solid #000;border-radius:16px;padding:14px;box-shadow:0 6px 0 #000;position:relative;min-height:250px}
+#q{font-size:19px;text-align:center;margin:8px 0 12px}#tmr{margin-bottom:6px}#tmr i{background:linear-gradient(90deg,#ff4d5e,#ffc83d,#2de2a0)}
+#opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{font:inherit;color:#fdf6e3;text-align:left;background:#34206f;border:3px solid #000;border-radius:12px;padding:12px;cursor:pointer;box-shadow:0 5px 0 #000;transition:.08s}
+.opt:hover{background:#4a2f95;transform:translateY(-2px)}.opt:active{transform:translateY(4px);box-shadow:0 1px 0 #000}.opt b{color:#ffc83d;margin-right:6px}
+.opt.ok{background:#12744f}.opt.no{background:#97263a}
+.btn{font:inherit;font-weight:800;color:#2a1600;background:#ffc83d;border:3px solid #000;border-radius:12px;padding:10px 20px;cursor:pointer;box-shadow:0 5px 0 #a8730a}.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #a8730a}
+#fb{margin-top:10px;border:3px solid #000;border-radius:12px;padding:10px 12px;animation:up .25s;display:flex;gap:10px;align-items:center;justify-content:space-between}#fb.ok{background:#12744f}#fb.no{background:#97263a}#fb p{font-weight:600;font-size:14px}
+.ov{position:absolute;inset:0;z-index:9;background:#0b0420ee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px;animation:pop .4s}
+.ov h1{font-size:clamp(20px,6vw,34px);color:#ffc83d;text-shadow:4px 4px 0 #c4172e}.ov .big{font-size:70px;animation:float 1.5s infinite}.ov p{font-weight:600;max-width:420px}
+@keyframes float{50%{transform:translateY(-12px)}}@keyframes tw{50%{opacity:.2}}@keyframes rise{to{transform:translateY(-60px);opacity:0}}
+@keyframes burst{to{transform:translate(var(--x),var(--y)) scale(.3);opacity:0}}@keyframes ban{0%{transform:scale(.3);opacity:0}30%{transform:scale(1.1);opacity:1}80%{opacity:1}to{opacity:0}}
+@keyframes shake{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}@keyframes fade{to{opacity:0}}@keyframes up{from{transform:translateY(20px);opacity:0}}@keyframes pop{from{transform:scale(.9);opacity:0}}
+@media(max-width:560px){#opts{grid-template-columns:1fr}#boss{font-size:70px}#hero{font-size:60px}#arena{height:240px}}
+</style></head><body>
+<div id="g"><div id="hud" class="px"></div><div id="arena"></div><div id="panel"></div></div>
+<script>
+const $=(s,e=document)=>e.querySelector(s),sh=a=>[...a].sort(()=>Math.random()-.5),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let ac;const beep=(f,d=.12,t='square')=>{try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}};
+const Q=a=>a.map(([q,e,...o])=>({q,e,o}));
+const WQ=Q([['What does a digital wallet actually store?','The wallet does not hold money; it stores the keys that connect you to the network.','Keys and credentials that give access to your money','Coins and paper notes','A copy of the whole bank','Your school marks'],
+['Which one is a digital wallet that allows Ngultrum payments using QR codes?','BoB Mobile Wallet and BIPS are both examples from the chapter.','BoB Mobile Wallet','A leather purse','A paper ledger','A piggy bank'],
+['Which is NOT one of the three roles of a digital wallet?','The three roles: stores access, proves ownership & shows data, enables action.','Printing physical banknotes','Storing access','Proving ownership','Sending signed transaction requests'],
+['Who should you share your recovery (seed) phrase with?','Anyone with these words has total control over your funds.','Nobody','Your best friend','Online support staff','Anyone who asks politely'],
+['Which is safe to give a friend who wants to send you money?','A wallet address is public; a private key is the master key.','Wallet address','Private key','Recovery phrase','OTP code'],
+['What does authentication do?','Authentication proves you are the true owner, e.g. by fingerprint, face ID or PIN.','Proves you are the true owner of the account','Makes coins heavier','Deletes old transactions','Prints receipts'],
+['A digital wallet is best compared to…','It is a bridge between you and the network where money is recorded.','A remote control for your money','A metal safe','A bag of coins','A bank vault'],
+['You lose your phone but have a backup of your wallet credentials. Can you still reach your money?','Money is recorded on the network, not on the phone – credentials let you restore access.','Yes – your funds are on the network, not the phone','No – the money is gone forever','Only if the phone is found','Only after 30 days']]);
+
+const BOSS=['👻','🦹','👹'],arena=$('#arena'),panel=$('#panel'),hud=$('#hud');let best=0;try{best=+(localStorage.wcb||0)}catch(e){}let tid,run=0;
+arena.innerHTML=Array.from({length:30},()=>`<i class="star" style="left:${Math.random()*100}%;top:${Math.random()*55}%;animation-delay:${Math.random()*2}s"></i>`).join('')+'<div id="combo" class="px"></div><div id="bossbar"><small class="px" id="bn">PHISHING PHANTOM</small><div class="bar"><i id="bh" style="width:100%"></i></div></div><div id="boss">👻</div><div id="hero">🛡️</div>';
+const fx=(h,x,y,c,t=1000)=>{const e=document.createElement('div');e.className=c;e.innerHTML=h;e.style.left=x;e.style.top=y;arena.appendChild(e);setTimeout(()=>e.remove(),t);return e};
+const banner=t=>{const e=document.createElement('div');e.id='banner';e.className='px';e.textContent=t;arena.appendChild(e);setTimeout(()=>e.remove(),1200)};
+const shake=e=>{e.classList.remove('hit');void e.offsetWidth;e.classList.add('hit')};
+function intro(){hud.innerHTML='';$('#boss').textContent='👻';$('#bh').style.width='100%';$('#combo').textContent='';
+ panel.innerHTML=`<div class="ov"><div class="big">👛</div><h1 class="px">WALLET CHECK</h1><p>The <b>Phishing Phantom</b> is attacking your digital wallet! Answer correctly to strike. A wrong answer or running out of time costs you a life ❤️. Build combos for bonus points!</p><div class="px" style="color:#ffc83d">BEST: ${'★'.repeat(best)+'☆'.repeat(3-best)}</div><button class="btn px" id="go">▶ FIGHT!</button></div>`;$('#go').onclick=play}
+async function play(){const me=++run;let sc=0,lives=3,combo=0,qs=sh(WQ),n=qs.length;const T=14000;
+ const H=()=>hud.innerHTML=`<span>SCORE <b id="sc">${sc}</b></span><span>${'❤️'.repeat(lives)}${'🖤'.repeat(3-lives)}</span><span>ROUND <b>${Math.min(cur+1,n)}/${n}</b></span>`;let cur=0;H();
+ $('#boss').textContent=BOSS[0];$('#bh').style.width='100%';$('#combo').textContent='';
+ for(cur=0;cur<n&&lives>0;cur++){H();const it=qs[cur],o=sh(it.o.map((t,i)=>[t,!i]));
+  if(cur===Math.floor(n/2)){$('#boss').textContent=BOSS[1];$('#bn').textContent='SCAM SORCERER';banner('PHASE 2!')}if(cur===n-2){$('#boss').textContent=BOSS[2];$('#bn').textContent='FRAUD DEMON';banner('FINAL ROUND!')}
+  if(cur===0)banner('FIGHT!');
+  panel.innerHTML=`<div class="bar" id="tmr"><i style="width:100%;transition:none"></i></div><div id="q">${it.q}</div><div id="opts">${o.map((x,i)=>`<button class="opt" data-i="${i}"><b>${i+1}</b>${x[0]}</button>`).join('')}</div>`;
+  const i=await new Promise(res=>{const t0=Date.now(),bar=$('#tmr i');tid=setInterval(()=>{const l=1-(Date.now()-t0)/T;bar.style.width=Math.max(l,0)*100+'%';if(l<=0){clearInterval(tid);res(-1)}},50);
+   const pick=j=>{clearInterval(tid);res(j)};panel.querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(+b.dataset.i));
+   document.onkeydown=e=>{const j=+e.key-1;if(j>=0&&j<o.length)pick(j)}});
+  document.onkeydown=null;if(me!==run)return;
+  panel.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(o[j][1])b.classList.add('ok');else if(j===i)b.classList.add('no')});
+  const ok=i>=0&&o[i][1];
+  if(ok){combo++;const p=10*Math.min(combo,3);sc+=p;beep(660);setTimeout(()=>beep(880),90);
+   const b=document.createElement('div');b.className='bolt';b.textContent='⚡';arena.appendChild(b);$('#hero').style.transform='translateX(40px)';await sleep(30);b.style.left='72%';await sleep(380);b.remove();$('#hero').style.transform='';
+   shake($('#boss'));fx('-'+p,'70%','30%','dmg px');for(let k=0;k<8;k++){const e=fx('✨','78%','40%','pt');e.style.setProperty('--x',(Math.random()*120-60)+'px');e.style.setProperty('--y',(Math.random()*120-60)+'px')}
+   $('#bh').style.width=(1-(cur+1)/n)*100+'%';$('#combo').textContent=combo>1?'COMBO x'+Math.min(combo,3)+'!':'';if(combo>1)banner('COMBO x'+Math.min(combo,3))}
+  else{combo=0;lives--;beep(150,.3,'sawtooth');$('#combo').textContent='';const bs=$('#boss');bs.style.transform='translateX(-180px)';await sleep(180);bs.style.transform='';shake($('#hero'));shake(arena);arena.classList.add('flash');setTimeout(()=>arena.classList.remove('flash'),450);fx('💔','14%','25%','dmg px')}
+  H();const f=document.createElement('div');f.id='fb';f.className=ok?'ok':'no';f.innerHTML=`<div><b>${ok?['Direct hit!','Critical strike!','Wallet wizard!'][cur%3]:i<0?'Time\'s up! The Phantom strikes!':'Blocked! The Phantom hits you!'}</b><p>${it.e}</p></div><button class="btn px" id="nx" style="font-size:10px">NEXT ▶</button>`;panel.appendChild(f);
+  await new Promise(r=>{$('#nx').onclick=r;document.onkeydown=e=>{if(e.key==='Enter')r()}});document.onkeydown=null;if(me!==run)return}
+ const win=lives>0;if(win){$('#bh').style.width='0%';$('#boss').textContent='💥';beep(1100,.3);await sleep(700)}else{$('#hero').textContent='💀'}
+ const stars=win?lives:0;if(stars>best){best=stars;try{localStorage.wcb=best}catch(e){}}
+ panel.innerHTML=`<div class="ov"><div class="big">${win?'🏆':'💀'}</div><h1 class="px">${win?'VICTORY!':'GAME OVER'}</h1><p>${win?'You protected your wallet from the Phantom!':'The Phantom drained your wallet. Study the chapter and try again!'}</p><div class="px" style="color:#ffc83d">SCORE ${sc}</div><div style="font-size:34px;color:#ffc83d;letter-spacing:6px">${'★'.repeat(stars)+'☆'.repeat(3-stars)}</div><button class="btn px" id="re">↻ REMATCH</button></div>`;
+ $('#re').onclick=()=>{$('#hero').textContent='🛡️';play()}}
+intro();
+</script></body></html>
